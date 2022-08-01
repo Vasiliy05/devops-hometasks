@@ -1,15 +1,11 @@
 sudo apt update
 sudo apt upgrade
-sudo apt install -y apache2 
-
-sudo apt -y install lsb-release apt-transport-https ca-certificates wget
-sudo wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
-echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/php.list
-
-sudo apt update
-sudo apt -y install php7.4
+sudo apt install -y apache2 php
 
 php -v
+
+echo 'Listen 81' >> /etc/apache2/ports.conf
+
 #create dir siteone
 mkdir -p /var/www/siteone/html
 cp /home/vagrant/index/index.html /var/www/siteone/html
