@@ -26,12 +26,9 @@ echo "==========================================================================
 yum -y install yum-utils epel-release wget
 yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 yum -y install http://rpms.remirepo.net/enterprise/remi-release-7.rpm
-yum install -y php7.4-xml
-yum --enablerepo=remi-php74 install -y php php-bz2 php-mysql php-curl php-gd php-intl php-common php-mbstring php-xml
-
 yum-config-manager --enable remi-php74
 yum -y update
-yum -y install php php-cli php-common php-fpm php-mysqlnd php-zip php-devel php-gd php-mbstring php-curl php-xml php-pear php-bcmath php-json
+yum -y install php  php-common
 
 echo "================================================================================"
 echo ">>> Installing PHP VERSION:"
@@ -40,16 +37,13 @@ php -v
 
 echo 'Listen 81' >> /etc/httpd/conf/httpd.conf
 
-mkdir /etc/httpd/sites-available /etc/httpd/sites-enabled
-echo "IncludeOptional sites-enabled/*.conf" >> /etc/httpd/conf/httpd.conf
+#mkdir /etc/httpd/sites-available /etc/httpd/sites-enabled
+#echo "IncludeOptional sites-enabled/*.conf" >> /etc/httpd/conf/httpd.conf
 
 systemctl restart httpd
 
 #create dir siteone
 mkdir -p /var/www/siteone/html
-#cp /home/vagrant/index/index.html /var/www/siteone/html
-#cp /home/vagrant/conf/siteone.conf /etc/httpd/sites-available/
-# setup hosts file
 INHTML=$(cat <<EOF
 <html>
   <head>
@@ -63,21 +57,20 @@ EOF
 )
 echo "${INHTML}" > /var/www/siteone/html/index.html
 
+# setup hosts file siteone
 CONFHTML=$(cat <<EOF
 <VirtualHost *:81>
     ServerAdmin webmaster@localhost
 	DocumentRoot /var/www/siteone/html
-    ErrorLog ${APACHE_LOG_DIR}/error.log
-	CustomLog ${APACHE_LOG_DIR}/access.log combined
+    #ErrorLog ${APACHE_LOG_DIR}/error.log
+	#CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
 EOF
 )
-echo "${CONFHTML}" > /etc/httpd/sites-available/siteone.conf
+echo "${CONFHTML}" >  /etc/httpd/conf.d/siteone.conf
 
 #create dir sitetwo
 mkdir -p /var/www/sitetwo/html
-#cp /home/vagrant/index/index.php /var/www/sitetwo/html
-#cp /home/vagrant/conf/sitetwo.conf /etc/httpd/sites-available/
 INPHP=$(cat <<EOF
 <html>
   <head>
@@ -94,22 +87,23 @@ INPHP=$(cat <<EOF
 </html>
 EOF
 )
-echo "${INPHP}" > /var/www/sitetwo/html/index.html
+echo "${INPHP}" > /var/www/sitetwo/html/index.php
 
+# setup hosts file sitetwo
 CONFPHP=$(cat <<EOF
-<VirtualHost *:81>
+<VirtualHost *:80>
     ServerAdmin webmaster@localhost
 	DocumentRoot /var/www/sitetwo/html
-    ErrorLog ${APACHE_LOG_DIR}/error.log
-	CustomLog ${APACHE_LOG_DIR}/access.log combined
+    #ErrorLog ${APACHE_LOG_DIR}/error.log
+	#CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
 EOF
 )
-echo "${CONFPHP}" > /etc/httpd/sites-available/sitetwo.conf
+echo "${CONFPHP}" >  /etc/httpd/conf.d/sitetwo.conf
 
 #active siteone and sitetwo
-ln -s /etc/httpd/sites-available/siteone.conf /etc/httpd/sites-enabled/siteone.conf
-ln -s /etc/httpd/sites-available/sitetwo.conf /etc/httpd/sites-enabled/sitetwo.conf
+#ln -s /etc/httpd/sites-available/siteone.conf /etc/httpd/sites-enabled/siteone.conf
+#ln -s /etc/httpd/sites-available/sitetwo.conf /etc/httpd/sites-enabled/sitetwo.conf
 
 # restart apache
-systemctl restart apache2
+service firewalld stop
