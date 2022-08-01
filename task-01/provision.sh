@@ -24,8 +24,8 @@ echo "==========================================================================
 echo ">>> Installing PHP 7.4"
 echo "================================================================================"
 yum -y install yum-utils epel-release wget
-yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-yum -y install http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+yum -y install http://rpms.remirepo.net/enterprise/remi-release-8.rpm
 yum-config-manager --enable remi-php74
 yum -y update
 yum -y install php php-common php-fpm
@@ -106,7 +106,7 @@ echo "${CONFPHP}" >  /etc/httpd/conf.d/sitetwo.conf
 
 chown -R apache.apache /var/www/
 chmod -R 755 /var/www
+service firewalld stop
 
 # restart apache
-service firewalld stop
 systemctl restart httpd
