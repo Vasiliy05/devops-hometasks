@@ -23,12 +23,10 @@ php
 echo "================================================================================"
 echo ">>> Installing PHP 7.4"
 echo "================================================================================"
-yum -y install yum-utils epel-release wget
-yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-yum -y install http://rpms.remirepo.net/enterprise/remi-release-8.rpm
-yum-config-manager --enable remi-php74
-yum -y update
-yum -y install php php-common php-fpm
+yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+yum module list php
+yum module enable php:7.4 -y
+yum install -y php php-cli php-common 
 
 echo "================================================================================"
 echo ">>> Installing PHP VERSION:"

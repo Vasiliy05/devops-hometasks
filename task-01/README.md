@@ -9,3 +9,5 @@
 - На комит поставьте тег `01.beta`.
 - versions - 0.1:
 - https://app.vagrantup.com/dosugwize/boxes/centos8-task01/versions/0.1/providers/virtualbox.box
+- versions - 0.2:
+- https://app.vagrantup.com/dosugwize/boxes/centos8-task01/versions/0.2/providers/virtualbox.box
