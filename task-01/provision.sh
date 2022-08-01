@@ -28,7 +28,7 @@ yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarc
 yum -y install http://rpms.remirepo.net/enterprise/remi-release-7.rpm
 yum-config-manager --enable remi-php74
 yum -y update
-yum -y install php  php-common
+yum -y install php php-common php-fpm
 
 echo "================================================================================"
 echo ">>> Installing PHP VERSION:"
