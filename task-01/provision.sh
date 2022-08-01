@@ -36,11 +36,10 @@ echo "==========================================================================
 php -v
 
 echo 'Listen 81' >> /etc/httpd/conf/httpd.conf
+echo 'ServerName 127.0.0.1' >> /etc/httpd/conf/httpd.conf
 
 #mkdir /etc/httpd/sites-available /etc/httpd/sites-enabled
 #echo "IncludeOptional sites-enabled/*.conf" >> /etc/httpd/conf/httpd.conf
-
-systemctl restart httpd
 
 #create dir siteone
 mkdir -p /var/www/siteone/html
@@ -105,5 +104,9 @@ echo "${CONFPHP}" >  /etc/httpd/conf.d/sitetwo.conf
 #ln -s /etc/httpd/sites-available/siteone.conf /etc/httpd/sites-enabled/siteone.conf
 #ln -s /etc/httpd/sites-available/sitetwo.conf /etc/httpd/sites-enabled/sitetwo.conf
 
+chown -R apache.apache /var/www/
+chmod -R 755 /var/www
+
 # restart apache
 service firewalld stop
+systemctl restart httpd
