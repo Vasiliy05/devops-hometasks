@@ -38,7 +38,7 @@ echo ">>> Installing PHP VERSION:"
 echo "================================================================================"
 php -v
 
-echo 'Listen 81' >> /etc/httpd/ports.conf
+echo 'Listen 81' >> /etc/httpd/conf/httpd.conf
 
 mkdir /etc/httpd/sites-available /etc/httpd/sites-enabled
 echo "IncludeOptional sites-enabled/*.conf" >> /etc/httpd/conf/httpd.conf
@@ -49,15 +49,63 @@ systemctl restart httpd
 mkdir -p /var/www/siteone/html
 #cp /home/vagrant/index/index.html /var/www/siteone/html
 #cp /home/vagrant/conf/siteone.conf /etc/httpd/sites-available/
-wget -O index.html https://drive.google.com/file/d/11uyXh2gtIc8WOApnVqkFBsvGvdf-PhuO/view?usp=sharing /var/www/siteone/html
-wget -O siteone.conf https://drive.google.com/file/d/12ed6WiwW4ml24jW3WwzP-rPL1rtIC1ls/view?usp=sharing /etc/httpd/sites-available/
+# setup hosts file
+INHTML=$(cat <<EOF
+<html>
+  <head>
+    <title>Success!</title>
+  </head>
+  <body>
+    You Vagrantfile is fine if you can see this message.
+  </body>
+</html>
+EOF
+)
+echo "${INHTML}" > /var/www/siteone/html/index.html
+
+CONFHTML=$(cat <<EOF
+<VirtualHost *:81>
+    ServerAdmin webmaster@localhost
+	DocumentRoot /var/www/siteone/html
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+	CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+EOF
+)
+echo "${CONFHTML}" > /etc/httpd/sites-available/siteone.conf
 
 #create dir sitetwo
 mkdir -p /var/www/sitetwo/html
 #cp /home/vagrant/index/index.php /var/www/sitetwo/html
 #cp /home/vagrant/conf/sitetwo.conf /etc/httpd/sites-available/
-wget -O index.php https://drive.google.com/file/d/12HidsMC-3L0Pkvto49oU3hxhs61E-ihT/view?usp=sharing /var/www/sitetwo/html
-wget -O sitetwo.conf https://drive.google.com/file/d/1rJuKUVY73keSFaepeqbcjCX1YWj1DhmW/view?usp=sharing /etc/httpd/sites-available/
+INPHP=$(cat <<EOF
+<html>
+  <head>
+    <title>Site is running PHP version <?= phpversion(); ?></title>
+  </head>
+  <body>
+    <?php
+      $limit = rand(1, 1000);
+      for ($i=0; $i<$limit; $i++){
+        echo "<p>Hello, world!</p>";
+      }
+    ?>
+  </body>
+</html>
+EOF
+)
+echo "${INPHP}" > /var/www/sitetwo/html/index.html
+
+CONFPHP=$(cat <<EOF
+<VirtualHost *:81>
+    ServerAdmin webmaster@localhost
+	DocumentRoot /var/www/sitetwo/html
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+	CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+EOF
+)
+echo "${CONFPHP}" > /etc/httpd/sites-available/sitetwo.conf
 
 #active siteone and sitetwo
 ln -s /etc/httpd/sites-available/siteone.conf /etc/httpd/sites-enabled/siteone.conf
