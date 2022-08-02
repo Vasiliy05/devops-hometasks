@@ -101,6 +101,7 @@ echo "${CONFPHP}" >  /etc/httpd/conf.d/sitetwo.conf
 
 chown -R apache.apache /var/www/
 chmod -R 755 /var/www
+systemctl disable firewalld
 service firewalld stop
 
 # restart apache

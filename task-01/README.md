@@ -7,5 +7,5 @@
 - Переработайте первое домашнее задание, основываясь на вашем образе. В вашем репозитории создайте ветку `feature-01`. Загрузите переработанное 1-е домашнее задание в каталог `task-01` в ветке `feature-01`.
 - Так же в директории `task-01` создайте `README.md` файл, в который пропишите ссылку на ваш Vagrant образ в Vagrant Cloud.
 - На комит поставьте тег `01.beta`.
-- versions - v0.5.beta:
-https://app.vagrantup.com/dosugwize/boxes/centos8-task01/versions/0.5.beta
+- versions - v0.6.beta:
+- https://app.vagrantup.com/dosugwize/boxes/centos8-task01/versions/0.6.beta
