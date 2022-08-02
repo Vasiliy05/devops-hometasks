@@ -33,6 +33,8 @@ echo ">>> Installing PHP VERSION:"
 echo "================================================================================"
 php -v
 
+mkdir /home/vagrant/tmp
+
 echo 'Listen 81' >> /etc/httpd/conf/httpd.conf
 echo 'ServerName 127.0.0.1' >> /etc/httpd/conf/httpd.conf
 
@@ -71,15 +73,10 @@ mkdir -p /var/www/sitetwo/html
 INPHP=$(cat <<EOF
 <html>
   <head>
-    <title>Site is running PHP version <?= phpversion(); ?></title>
+    <title>Site PHP</title>
   </head>
   <body>
-    <?php
-      $limit = rand(1, 1000);
-      for ($i=0; $i<$limit; $i++){
-        echo "<p>Hello, world!</p>";
-      }
-    ?>
+      <p>Hello, world! PHP</p>
   </body>
 </html>
 EOF
