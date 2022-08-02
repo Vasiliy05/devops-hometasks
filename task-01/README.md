@@ -11,3 +11,5 @@
 - https://app.vagrantup.com/dosugwize/boxes/centos8-task01/versions/0.1/providers/virtualbox.box
 - versions - 0.2:
 - https://app.vagrantup.com/dosugwize/boxes/centos8-task01/versions/0.2/providers/virtualbox.box
+- versions - v0.3.beta:
+- https://app.vagrantup.com/dosugwize/boxes/centos8-task01/versions/0.3.beta/providers/virtualbox.box
