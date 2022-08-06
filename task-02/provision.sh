@@ -44,11 +44,15 @@ yum -y -q install -y httpd httpd-devel httpd-tools
 
 mkdir -p /var/www/siteone/html
 cd /var/www/siteone/html
-curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/master/task-01/index/index.html
+curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/index.html
 
 cd /etc/httpd/conf.d/
-curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/master/task-01/conf/siteone.conf
+curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/siteone.conf
 
+systemctl disable firewalld
+service firewalld stop
+setenforce 0
+systemctl restart httpd
 exit
 
 #lxc-create -n php-site -f /home/vagrant/.config/lxc/root.conf --template download -- --dist centos --release 8-Stream --arch amd64
@@ -60,6 +64,13 @@ exit
 #
 #mkdir -p /var/www/sitetwo/html
 #cd /var/www/sitetwo/html
-#curl -O
+#curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/dinamic_site/index.php
 #
 #cd /etc/httpd/conf.d/
+#curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/dinamic_site/sitetwo.conf
+
+#systemctl disable firewalld
+#service firewalld stop
+#setenforce 0
+#systemctl restart httpd
+#exit
