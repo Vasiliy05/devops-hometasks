@@ -1,0 +1,23 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "debian/buster64"
+
+  config.vm.provider "virtualbox" do |vb|
+    # vb.name = "demogitdebianten.vagrant.vm"
+    # Customize the amount of memory on the VM:
+    vb.memory = "1024"
+    vb.name   = "lxc.vagrant.vm"
+    vb.cpus = 1
+  end
+
+  #config.vm.hostname = "debianten"
+
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  config.vm.synced_folder ".", "/home/vagrant/tmp"
+
+  #config.vm.provision "shell", path: "provision.sh"
+end
