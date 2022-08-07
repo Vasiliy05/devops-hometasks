@@ -44,7 +44,7 @@ curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/
 systemctl restart lxc-net
 
 lxc-create -n static_site -f /root/.config/lxc/root.conf --template download -- --dist centos --release 8-Stream --arch amd64 --keyserver hkp://keyserver.ubuntu.com
-lxc-create -n dinamic_site -f /root/.config/lxc/root.conf --template download -- --dist centos --release 8-Stream --arch amd64 --keyserver hkp://keyserver.ubuntu.com
+lxc-create -n dynamic_site -f /root/.config/lxc/root.conf --template download -- --dist centos --release 8-Stream --arch amd64 --keyserver hkp://keyserver.ubuntu.com
 echo "================================================================================"
 echo ">>> run static_site and dinamic_site"
 echo "================================================================================"
@@ -53,7 +53,7 @@ lxc-ls -f
 #curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/ifcfg-eth0
 
 lxc-start -n static_site
-lxc-start -n dinamic_site
+lxc-start -n dynamic_site
 echo "================================================================================"
 echo ">>> info static_site and dinamic_site"
 echo "================================================================================"
