@@ -51,7 +51,6 @@ echo "==========================================================================
 lxc-ls -f
 #cd /var/lib/lxc/static_site/rootfs/etc/sysconfig/network-scripts/
 #curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/ifcfg-eth0
-
 lxc-start -n static_site
 lxc-start -n dynamic_site
 echo "================================================================================"
