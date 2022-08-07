@@ -23,17 +23,25 @@ cd /etc/default/
 curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/conf-lxc/grub
 update-grub
 
+#config root
 mkdir -p ~/.config/lxc/
 cd ~/.config/lxc/
 curl -O  https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/conf-lxc/root.conf
 
+#vagrant veth lxcbr0
 touch /etc/lxc/lxc-usernet
 cd /etc/lxc
 curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/conf-lxc/lxc-usernet
 
-#cd /etc/default/
-#curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/conf-lxc/lxc-net
-#systemctl restart lxc-net
+#static ip
+touch /etc/default/lxc-dhcp.conf
+cd /etc/default/
+curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/conf-lxc/lxc-dhcp.conf
+systemctl restart lxc-net
+#lxc_bridge
+cd /etc/default/
+curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/conf-lxc/lxc-net
+systemctl restart lxc-net
 
 lxc-create -n static_site -f /root/.config/lxc/root.conf --template download -- --dist centos --release 8-Stream --arch amd64 --keyserver hkp://keyserver.ubuntu.com
 lxc-ls -f
