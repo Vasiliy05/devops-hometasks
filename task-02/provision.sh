@@ -13,9 +13,8 @@ iptables -t nat -A PREROUTING -p tcp -i eth0 --dport 81 -j DNAT --to-destination
 iptables -L -t nat
 
 echo 'kernel.unprivileged_userns_clone=1' >> /etc/sysctl.conf
-
-echo 'export DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com"' >> ~/.bashrc
-. .bashrc
+#echo 'export DOWNLOAD_KEYSERVER="hkp://keyserver.ubuntu.com"' >> ~/.bashrc
+#. .bashrc
 
 cp /etc/default/grub /etc/default/grub.bak
 
@@ -27,12 +26,10 @@ update-grub
 mkdir -p ~/.config/lxc/
 cd ~/.config/lxc/
 curl -O  https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/conf-lxc/root.conf
-
 #vagrant veth lxcbr0
 touch /etc/lxc/lxc-usernet
 cd /etc/lxc
 curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/conf-lxc/lxc-usernet
-
 #static ip
 touch /etc/default/lxc-dhcp.conf
 cd /etc/default/
@@ -49,25 +46,21 @@ echo "==========================================================================
 echo ">>> run static_site and dinamic_site"
 echo "================================================================================"
 lxc-ls -f
-#cd /var/lib/lxc/static_site/rootfs/etc/sysconfig/network-scripts/
-#curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/ifcfg-eth0
 lxc-start -n static_site
 lxc-start -n dynamic_site
 echo "================================================================================"
 echo ">>> info static_site and dinamic_site"
 echo "================================================================================"
-sleep 5
+sleep 10
 lxc-ls -f
 
 lxc-attach static_site -- yum update
 lxc-attach static_site -- yum -y -q install -y httpd httpd-devel httpd-tools
 lxc-attach static_site -- mkdir -p /var/www/siteone/html
-#lxc-attach static_site -- cd /var/www/siteone/html
-#lxc-attach static_site -- curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/index.html
+
 cd /var/lib/lxc/static_site/rootfs/var/www/siteone/html/
 curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/index.html
-#lxc-attach static_site -- cd /etc/httpd/conf.d/
-#lxc-attach static_site -- curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/siteone.conf
+
 cd /var/lib/lxc/static_site/rootfs/etc/httpd/conf.d/
 curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/siteone.conf
 
@@ -75,10 +68,6 @@ lxc-attach static_site -- systemctl disable firewalld
 lxc-attach static_site -- service firewalld stop
 lxc-attach static_site -- setenforce 0
 lxc-attach static_site -- systemctl restart httpd
-#exit
-
-#cd /var/lib/lxc/dinamic/rootfs/etc/sysconfig/network-scripts/
-#curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/dinamic_site/ifcfg-eth0
 
 lxc-attach dynamic_site -- yum update
 lxc-attach dynamic_site -- yum -y -q install -y httpd httpd-devel httpd-tools php
@@ -90,8 +79,7 @@ lxc-attach dynamic_site -- mkdir -p /var/www/sitetwo/html
 
 cd /var/lib/lxc/dynamic_site/rootfs/var/www/sitetwo/html/
 curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/dynamic_site/index.php
-#cd /etc/httpd/conf.d/
-#curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/dinamic_site/sitetwo.conf
+
 cd /var/lib/lxc/dynamic_site/rootfs/etc/httpd/conf.d/
 curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/dynamic_site/sitetwo.conf
 
@@ -99,4 +87,3 @@ lxc-attach dynamic_site -- systemctl disable firewalld
 lxc-attach dynamic_site -- service firewalld stop
 lxc-attach dynamic_site -- setenforce 0
 lxc-attach dynamic_site -- systemctl restart httpd
-#exit
