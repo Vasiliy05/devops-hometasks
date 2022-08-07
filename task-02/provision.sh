@@ -35,8 +35,11 @@ cd /etc/default/
 curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/conf-lxc/lxc-net
 systemctl restart lxc-net
 
-lxc-create -n html-site -f /root/.config/lxc/root.conf --template download -- --dist centos --release 8-Stream --arch amd64 --keyserver hkp://keyserver.ubuntu.com
+lxc-create -n static -f /root/.config/lxc/root.conf --template download -- --dist centos --release 8-Stream --arch amd64 --keyserver hkp://keyserver.ubuntu.com
 chroot /var/lib/lxc/html-site/rootfs/
+
+cd /var/lib/lxc/static/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0
+curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/ifcfg-eth0
 
 lxc-start static
 lxc-ls -f
@@ -57,10 +60,15 @@ setenforce 0
 systemctl restart httpd
 exit
 
-#lxc-create -n dinamic -f /home/vagrant/.config/lxc/root.conf --template download -- --dist centos --release 8-Stream --arch amd64
+#lxc-create -n dinamic -f /home/vagrant/.config/lxc/root.conf --template download -- --dist centos --release 8-Stream --arch amd64 --keyserver hkp://keyserver.ubuntu.com
+
+#cd /var/lib/lxc/dinamic/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0
+#curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/dinamic_site/ifcfg-eth0
+
 #lxc-start dinamic
 #lxc-ls -f
 #lxc-attach dinamic
+
 #yum update
 #yum -y -q install -y httpd httpd-devel httpd-tools
 #
