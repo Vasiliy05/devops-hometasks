@@ -1,7 +1,7 @@
 DEVICE=eth0
 BOOTPROTO=none
 ONBOOT=yes
-HOSTNAME=static
+HOSTNAME=static_site
 TYPE=Ethernet
 DEFROUTE=yes
 IPV4_FAILURE_FATAL=no
