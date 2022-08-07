@@ -31,19 +31,19 @@ touch /etc/lxc/lxc-usernet
 cd /etc/lxc
 curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/conf-lxc/lxc-usernet
 
-cd /etc/default/
-curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/conf-lxc/lxc-net
-systemctl restart lxc-net
+#cd /etc/default/
+#curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/conf-lxc/lxc-net
+#systemctl restart lxc-net
 
-lxc-create -n static -f /root/.config/lxc/root.conf --template download -- --dist centos --release 8-Stream --arch amd64 --keyserver hkp://keyserver.ubuntu.com
-chroot /var/lib/lxc/html-site/rootfs/
-
-cd /var/lib/lxc/static/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0
-curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/ifcfg-eth0
-
-lxc-start static
+lxc-create -n static_site -f /root/.config/lxc/root.conf --template download -- --dist centos --release 8-Stream --arch amd64 --keyserver hkp://keyserver.ubuntu.com
 lxc-ls -f
-lxc-attach static
+
+#cd /var/lib/lxc/static_site/rootfs/etc/sysconfig/network-scripts/
+#curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/ifcfg-eth0
+
+lxc-start static_site
+lxc-ls -f
+lxc-attach static_site
 yum update
 yum -y -q install -y httpd httpd-devel httpd-tools
 
@@ -62,7 +62,7 @@ exit
 
 #lxc-create -n dinamic -f /home/vagrant/.config/lxc/root.conf --template download -- --dist centos --release 8-Stream --arch amd64 --keyserver hkp://keyserver.ubuntu.com
 
-#cd /var/lib/lxc/dinamic/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0
+#cd /var/lib/lxc/dinamic/rootfs/etc/sysconfig/network-scripts/
 #curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/dinamic_site/ifcfg-eth0
 
 #lxc-start dinamic
