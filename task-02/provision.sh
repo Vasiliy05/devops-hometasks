@@ -44,54 +44,60 @@ curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/
 systemctl restart lxc-net
 
 lxc-create -n static_site -f /root/.config/lxc/root.conf --template download -- --dist centos --release 8-Stream --arch amd64 --keyserver hkp://keyserver.ubuntu.com
+lxc-create -n dinamic_site -f /root/.config/lxc/root.conf --template download -- --dist centos --release 8-Stream --arch amd64 --keyserver hkp://keyserver.ubuntu.com
+echo "================================================================================"
+echo ">>> run static_site and dinamic_site"
+echo "================================================================================"
 lxc-ls -f
-
 #cd /var/lib/lxc/static_site/rootfs/etc/sysconfig/network-scripts/
 #curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/ifcfg-eth0
 
-lxc-start static_site
+lxc-start -n static_site
+lxc-start -n dinamic_site
+echo "================================================================================"
+echo ">>> info static_site and dinamic_site"
+echo "================================================================================"
+sleep 5
 lxc-ls -f
-lxc-attach static_site
-yum update
-yum -y -q install -y httpd httpd-devel httpd-tools
 
-mkdir -p /var/www/siteone/html
-cd /var/www/siteone/html
+lxc-attach static_site -- yum update
+lxc-attach static_site -- yum -y -q install -y httpd httpd-devel httpd-tools
+lxc-attach static_site -- mkdir -p /var/www/siteone/html
+#lxc-attach static_site -- cd /var/www/siteone/html
+#lxc-attach static_site -- curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/index.html
+cd /var/lib/lxc/static_site/rootfs/var/www/siteone/html/
 curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/index.html
-
-cd /etc/httpd/conf.d/
+#lxc-attach static_site -- cd /etc/httpd/conf.d/
+#lxc-attach static_site -- curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/siteone.conf
+cd /var/lib/lxc/static_site/rootfs/etc/httpd/conf.d/
 curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/static_site/siteone.conf
 
-systemctl disable firewalld
-service firewalld stop
-setenforce 0
-systemctl restart httpd
-exit
-
-#lxc-create -n dinamic -f /home/vagrant/.config/lxc/root.conf --template download -- --dist centos --release 8-Stream --arch amd64 --keyserver hkp://keyserver.ubuntu.com
+lxc-attach static_site -- systemctl disable firewalld
+lxc-attach static_site -- service firewalld stop
+lxc-attach static_site -- setenforce 0
+lxc-attach static_site -- systemctl restart httpd
+#exit
 
 #cd /var/lib/lxc/dinamic/rootfs/etc/sysconfig/network-scripts/
 #curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/dinamic_site/ifcfg-eth0
 
-#lxc-start dinamic
-#lxc-ls -f
-#lxc-attach dinamic
+lxc-attach dynamic_site -- yum update
+lxc-attach dynamic_site -- yum -y -q install -y httpd httpd-devel httpd-tools php
 
-#yum update
-#yum -y -q install -y httpd httpd-devel httpd-tools
-#
-#echo 'Listen 81' >> /etc/httpd/conf/httpd.conf
-#echo 'ServerName 127.0.0.1' >> /etc/httpd/conf/httpd.conf
-#
-#mkdir -p /var/www/sitetwo/html
-#cd /var/www/sitetwo/html
-#curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/dinamic_site/index.php
-#
+echo 'Listen 81' >> /var/lib/lxc/dynamic_site/rootfs/etc/httpd/conf/httpd.conf
+echo 'ServerName 127.0.0.1' >> /var/lib/lxc/dynamic_site/rootfs/etc/httpd/conf/httpd.conf
+
+lxc-attach dynamic_site -- mkdir -p /var/www/sitetwo/html
+
+cd /var/lib/lxc/dynamic_site/rootfs/var/www/sitetwo/html/
+curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/dynamic_site/index.php
 #cd /etc/httpd/conf.d/
 #curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/dinamic_site/sitetwo.conf
+cd /var/lib/lxc/dynamic_site/rootfs/etc/httpd/conf.d/
+curl -O https://raw.githubusercontent.com/Vasiliy05/devops-hometasks/feature-02/task-02/dynamic_site/sitetwo.conf
 
-#systemctl disable firewalld
-#service firewalld stop
-#setenforce 0
-#systemctl restart httpd
+lxc-attach dynamic_site -- systemctl disable firewalld
+lxc-attach dynamic_site -- service firewalld stop
+lxc-attach dynamic_site -- setenforce 0
+lxc-attach dynamic_site -- systemctl restart httpd
 #exit
