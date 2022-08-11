@@ -1,0 +1,30 @@
+---
+- name: Test site
+  hosts: all
+
+  tasks:
+    - name: Install Apache
+      sudo: true
+      apt:
+        name: apache2
+        state: present
+        update_cache: true
+
+    - name: Install php
+      become: yes
+      apt:
+        name: php
+        state: present
+        update_cache: true
+
+    - name: Install mc
+      become: yes
+      apt:
+        name: mc
+        state: present
+        update_cache: true
+
+#    - name: Download foo.conf
+#      ansible.builtin.get_url:
+#        url: http://example.com/path/file.conf
+#        dest: /etc/foo.conf

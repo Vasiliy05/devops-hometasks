@@ -1,0 +1,37 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "debian/buster64"
+  
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "256"
+  end
+
+  config.vm.define "master", primary: true do |master|
+    master.vm.network "private_network", ip: "192.168.50.4"
+
+    master.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y vim mc ansible sshpass
+      sed -i "s/#host_key_checking = False/host_key_checking = False/g" /etc/ansible/ansible.cfg
+      sed -i "s/^#force_color_prompt=yes\$/force_color_prompt=yes/g" /home/vagrant/.bashrc
+      sed -i "s/^#alias ll='ls -l'\$/alias ll='ls -la'/g" /home/vagrant/.bashrc
+    SHELL
+
+    master.vm.provision "file", source: "inventory", destination: "~vagrant/"
+    master.vm.provision "file", source: "playbook.yaml", destination: "~vagrant/"
+  end
+
+  config.vm.define "site", primary: true do |slave|
+    slave.vm.network "private_network", ip: "192.168.50.5"
+    slave.vm.provision "shell", inline: <<-SHELL
+      sed -i "s/^#force_color_prompt=yes\$/force_color_prompt=yes/g" /home/vagrant/.bashrc
+      sed -i "s/^#alias ll='ls -l'\$/alias ll='ls -la'/g" /home/vagrant/.bashrc
+      sed -i "s/^PasswordAuthentication no\$/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+      service sshd restart
+      echo -e "vagrant\nvagrant" | passwd vagrant
+    SHELL
+    
+  end
+end
