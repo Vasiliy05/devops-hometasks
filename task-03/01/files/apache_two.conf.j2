@@ -1,0 +1,17 @@
+<VirtualHost *:{{ http_port2 }}>
+   ServerAdmin webmaster@localhost
+   #ServerName {{ http_host2 }}
+   #ServerAlias www.{{ http_host2 }}
+   DocumentRoot /var/www/sitetwo{{ http_host2 }}
+   ErrorLog ${APACHE_LOG_DIR}/error.log
+   CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+   <Directory /var/www/sitetwo{{ http_host2 }}>
+         Options -Indexes
+   </Directory>
+
+   <IfModule mod_dir.c>
+       DirectoryIndex index.php index.html index.cgi index.pl  index.xhtml index.htm
+   </IfModule>
+
+</VirtualHost>

@@ -1,0 +1,9 @@
+---
+app_user: "vagrant"
+http_host_1: "siteone"
+http_conf_1: "siteone.conf"
+http_port_1: "80"
+http_host_2: "sitetwo"
+http_conf_2: "sitetwo.conf"
+http_port_2: "81"
+disable_default: true
