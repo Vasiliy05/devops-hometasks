@@ -22,7 +22,7 @@
         dest: "{{ item.dest }}"
       with_items:
        - {src: '/vagrant/lxc-usernet', dest: '/etc/lxc/'}
-       - {src: '/vagrant/dnsmasq.conf', dest: '/etc/lxc/'}
+       - {src: '/vagrant/lxc-dhcp.conf', dest: '/etc/lxc/'}
        - {src: '/vagrant/lxc-net', dest: '/etc/default/'}
 
     - name: Enable lxc-net for autostart with system
