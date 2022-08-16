@@ -1,0 +1,155 @@
+---
+- name: Ansible LXC
+  hosts: all
+  
+  tasks:  
+    - name: Install packages
+      become: true
+      apt:
+        pkg:
+          - lxc
+          - lxc-templates
+          - python-lxc
+          - python-pip
+          - mc          
+    
+    - name: start and enable lxc
+      become: true
+      service:
+        name: lxc
+        state: started
+        enabled: yes
+    
+    - name: Edit lxc default.conf
+      become: true
+      replace:
+         path: /etc/lxc/default.conf
+         regexp: 'lxc.apparmor.profile = generated'
+         replace: 'lxc.apparmor.profile = unconfined'
+    
+    - name: Edit lxc default.conf
+      become: true
+      replace:
+         path: /etc/lxc/default.conf
+         regexp: 'lxc.net.0.type = empty'
+         replace: 'lxc.net.0.type = veth'
+    
+    - name: Edit lxc default.conf
+      become: true
+      copy:
+         dest: /etc/lxc/default.conf
+         content: |
+           lxc.start.auto = 1
+           lxc.net.0.type = veth
+           lxc.net.0.flags = up
+           lxc.net.0.link = lxcbr0
+    
+    - name: Edit /etc/default/lxc-net
+      become: true
+      copy:
+         dest: /etc/default/lxc-net
+         content: |
+           USE_LXC_BRIDGE="true"
+           LXC_BRIDGE="lxcbr0"
+           LXC_ADDR="10.0.3.1"
+           LXC_NETMASK="255.255.255.0"
+           LXC_NETWORK="10.0.3.0/24"
+           LXC_DHCP_RANGE="10.0.3.2,10.0.3.254"
+           LXC_DHCP_MAX="253"
+           LXC_DHCP_CONFILE=""
+           LXC_DOMAIN=""
+    
+    - name: Edit /etc/lxc/lxc-usernet
+      become: true
+      copy:
+         dest: /etc/lxc/lxc-usernet
+         content: |
+           vagrant veth lxcbr0 10
+           
+    - name: Restart lxc-net
+      become: true
+      service:
+        name: lxc-net
+        state: restarted
+        enabled: yes
+        
+    - name: Create container 1
+      lxc_container:
+        name: centos80
+        template: download
+        template_options: --dist centos --release 8-Stream --arch amd64
+        state: started
+        container_command: |
+          sleep 30
+          yum install httpd -y
+          yum install php -y
+          systemctl enable httpd
+          systemctl start httpd
+    
+    - name: Create container 2
+      lxc_container:
+        name: centos81
+        template: download
+        template_options: --dist centos --release 8-Stream --arch amd64
+        state: started
+        container_command: |
+          sleep 30
+          yum install httpd -y
+          yum install php -y
+          systemctl enable httpd
+          systemctl start httpd
+          
+    - name: Create directories and copy files container 1
+      file:
+        path: /var/lib/lxc/centos80/rootfs/var/www/siteone
+        state: directory
+        
+    - copy:
+        src: /home/vagrant/index.html
+        dest: /var/lib/lxc/centos80/rootfs/var/www/siteone/
+    
+    - copy:
+        src: /home/vagrant/siteone.conf
+        dest: /var/lib/lxc/centos80/rootfs/etc/httpd/conf.d/siteone.conf
+        
+    - name: Restart httpd in container
+      lxc_container:
+        name: centos80
+        container_command: |
+          systemctl restart httpd    
+          
+    - name: Create directories and copy files container 2
+      file:
+        path: /var/lib/lxc/centos81/rootfs/var/www/sitetwo
+        state: directory
+        
+    - copy:
+        src: /home/vagrant/index.php
+        dest: /var/lib/lxc/centos81/rootfs/var/www/sitetwo/
+    
+    - copy:
+        src: /home/vagrant/sitetwo.conf
+        dest: /var/lib/lxc/centos81/rootfs/etc/httpd/conf.d/sitetwo.conf
+    
+    - name: Edit httpd.conf
+      lineinfile:
+        path: /var/lib/lxc/centos81/rootfs/etc/httpd/conf/httpd.conf
+        regexp: '^Listen 81'
+        insertafter: '^Listen 80' 
+        line: 'Listen 81'
+    
+    - name: Restart httpd in container
+      lxc_container:
+        name: centos81
+        container_command: |
+          systemctl restart httpd
+          
+    - name: IPTABLES for Debian
+      become: true
+      shell: |
+        centos80_ip=$(sudo lxc-info -i -n centos80 | cut -d : -f 2)
+        centos81_ip=$(sudo lxc-info -i -n centos81 | cut -d : -f 2)
+        sudo iptables -F
+        sudo iptables -t nat -I PREROUTING -i eth0 -p tcp --dport 80 -j DNAT --to-destination ${centos80_ip}:80
+        sudo iptables -t nat -I PREROUTING -i eth0 -p tcp --dport 81 -j DNAT --to-destination ${centos81_ip}:81
+        sudo iptables-save
