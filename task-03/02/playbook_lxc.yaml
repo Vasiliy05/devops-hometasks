@@ -1,0 +1,113 @@
+---
+- name: Playbook_lxc applay
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  hosts: all
+
+  tasks:
+
+    - name: install packages
+      apt:
+        pkg:
+        - python3-lxc
+        - lxc
+        - lxc-templates
+        - yum
+        state: present
+
+    - name: Copy files for network configuration
+      copy:
+        force: yes
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+       - {src: '/vagrant/lxc-usernet', dest: '/etc/lxc/'}
+       - {src: '/vagrant/dnsmasq.conf', dest: '/etc/lxc/'}
+       - {src: '/vagrant/lxc-net', dest: '/etc/default/'}
+
+    - name: Enable lxc-net for autostart with system
+      systemd:
+        name: lxc-net
+        enabled: yes
+
+    - name: Start services (lxc-net, lxc)
+      service:
+        name: "{{ item.serv }}"
+        state: restarted
+      with_items:
+       - {serv: 'lxc-net'}
+       - {serv: 'lxc'}
+
+    - name: Create two containers (c1-static, c2-php)
+      lxc_container:
+        name: "{{ item.name }}"
+        container_log: true
+        config: /vagrant/lxc-cfg.conf
+        template: centos
+        state: started
+        container_command:
+      with_items:
+       - {name: 'c1-static'}
+       - {name: 'c2-php'}
+
+    - name: Wait 20 sec when conteiners is up
+      shell: "sleep 20"
+
+    - name: Install, enable and start HTTPD in conteiner c1-static
+      lxc_container:
+        name: c1-static
+        state: started
+        container_command: |
+          yum install -y httpd
+          systemctl enable httpd
+          systemctl start httpd
+
+    - name: Install, enable and start HTTPD in conteiner c1-static
+      lxc_container:
+        name: c2-php
+        state: started
+        container_command: |
+          yum install -y httpd php
+          systemctl enable httpd
+          systemctl start httpd
+
+    - name: copy files foe sites to conteyners
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+       - {src: '/vagrant/index.html', dest: '/var/lib/lxc/c1-static/rootfs/var/www/html/'}
+       - {src: '/vagrant/index.php', dest: '/var/lib/lxc/c2-php/rootfs/var/www/html/'}
+
+    - name: Forward port 80 and 81
+      iptables:
+        table: nat
+        chain: PREROUTING
+        in_interface: eth0
+        protocol: tcp
+        destination_port: "{{ item.dport }}"
+        jump: DNAT
+        to_destination: "{{ item.to_dest }}"
+      with_items:
+       - {dport: '8080', to_dest: '10.0.3.10:80'}
+       - {dport: '8081', to_dest: '10.0.3.20:80'}
+
+    - name: Creates directory iptables-conf
+      file:
+        path: /etc/iptables-conf
+        state: directory
+
+    - name: Save current state iptables to file
+      shell: "iptables-save > /etc/iptables-conf/iptbl_save"
+
+    - name: Make script for load iptables rulls when network is up
+      copy:
+        dest: /etc/network/if-pre-up.d/iptables
+        content: | 
+          #!/bin/sh
+          /sbin/iptables-restore < /etc/iptables-conf/iptbl_save
+
+    - name: Change rights of scritp's file for executable
+      file:
+        path: /etc/network/if-pre-up.d/iptables
+        mode: a+x

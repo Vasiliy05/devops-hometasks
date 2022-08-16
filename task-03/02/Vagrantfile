@@ -1,0 +1,26 @@
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "debian/buster64"
+  config.vm.hostname = "TASK-03"
+
+  config.vm.network "forwarded_port", guest: 8080, host: 8080, host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", guest: 8081, host: 8081, host_ip: "127.0.0.1"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024"
+  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+    apt update  
+    apt install -y gnupg2
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367
+    echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu bionic main" >> /etc/apt/sources.list
+    apt update
+    apt install -y ansible
+  SHELL
+
+  config.vm.provision "ansible_local" do |ansible|
+    ansible.playbook = "playbook_lxc.yaml"
+    ansible.become = true
+  end
+end
