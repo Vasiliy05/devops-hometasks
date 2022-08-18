@@ -1,0 +1,23 @@
+---
+- name: install html_lcx
+  hosts: c1-static
+  become: yes
+  become_user: root
+  tasks:
+    - name: yum install httpd in container
+      yum:
+       name: httpd
+       state: latest
+
+- name: intall php_lcx
+  hosts: c2-php
+  become: yes
+  tasks:
+    - name: yum install nano
+      yum:
+        name: httpd
+        state: latest
+    - name: yum install php
+      yum:
+        name: php
+        state: latest

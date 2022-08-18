@@ -1,0 +1,15 @@
+all:
+  vars:
+    ansible_connection: lxc
+    ansible_become: yes
+  children:
+    html_lcx:
+      vars:
+        ansible_lxd_remote: localhost
+      hosts:
+        c1-static:
+    php_lcx:
+      vars:
+        ansible_lxd_remote: localhost
+      hosts:
+        c2-php:
