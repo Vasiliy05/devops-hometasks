@@ -1,0 +1,5 @@
+:cachedir: '/var/cache/r10k'
+:sources:
+    :my-org:
+        remote: 'https://github.com/aleexpo/puppet-server-repo.git' 
+        basedir: '/etc/puppetlabs/code/environments'
