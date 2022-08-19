@@ -1,0 +1,56 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/debian10"
+  #config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+  #config.vm.network "forwarded_port", guest: 81, host: 8081, host_ip: "127.0.0.1"
+
+  config.vm.define "slave1" do |node|
+    node.vm.network "private_network", ip: "192.168.56.9"
+    node.vm.provider("virtualbox") { |vb| vb.memory = 1024 }
+    node.vm.provision "shell", inline: <<-shell 
+      touch /root/README
+      shell
+  end
+
+  config.vm.define "slave2" do |node|
+    node.vm.network "private_network", ip: "192.168.56.10"
+    node.vm.provider("virtualbox") { |vb| vb.memory = 1024 }
+    node.vm.provision "shell", inline: <<-shell 
+      touch /root/README
+      shell
+  end
+  
+  config.vm.define "mineserver.puppet" do |node|
+    node.vm.network "private_network", ip: "192.168.56.12"
+    node.vm.provider("virtualbox") { |vb| vb.memory = 1024 }
+  end
+
+  config.vm.define "master.puppet" do |node|
+    node.vm.provider("virtualbox") { |vb| vb.memory = 1024 }
+    node.vm.network "private_network", ip: "192.168.56.11"
+
+
+    node.vm.provision :file, source: '.vagrant/machines/slave1/virtualbox/private_key', destination: '/home/vagrant/.ssh/private_key_slave1'
+    node.vm.provision :file, source: '.vagrant/machines/slave2/virtualbox/private_key', destination: '/home/vagrant/.ssh/private_key_slave2'
+    node.vm.provision :file, source: '.vagrant/machines/mineserver.puppet/virtualbox/private_key', destination: '/home/vagrant/.ssh/private_key_mineserver.puppet'
+    node.vm.provision :file, source: 'inventory/hosts', destination: 'inventory/hosts'
+
+    config.vm.synced_folder ".", "/vagrant"
+
+    node.vm.provision "shell", inline: <<-shell 
+      chmod =600 /home/vagrant/.ssh/private_key_slave1 
+      chmod =600 /home/vagrant/.ssh/private_key_slave2 
+      chmod =600 /home/vagrant/.ssh/private_key_mineserver.puppet
+
+      shell
+
+    node.vm.provision :ansible_local do |ansible|
+
+      ansible.playbook          = "playbook.yaml"
+      ansible.inventory_path = "inventory/hosts"  
+      ansible.limit = "all"
+    end
+  end
+end
