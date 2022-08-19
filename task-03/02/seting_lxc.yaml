@@ -1,5 +1,5 @@
 ---
-- name: install html_lcx
+- name: install c1-static
   hosts: c1-static
   become: yes
   become_user: root
@@ -9,7 +9,7 @@
        name: httpd
        state: latest
 
-- name: intall php_lcx
+- name: intall c2-php
   hosts: c2-php
   become: yes
   tasks:

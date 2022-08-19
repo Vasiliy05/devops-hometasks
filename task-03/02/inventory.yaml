@@ -3,13 +3,13 @@ all:
     ansible_connection: lxc
     ansible_become: yes
   children:
-    html_lcx:
+    c1-static:
       vars:
-        ansible_lxd_remote: localhost
+        ansible_lxс_remote: localhost
       hosts:
         c1-static:
-    php_lcx:
+    c2-php:
       vars:
-        ansible_lxd_remote: localhost
+        ansible_lxс_remote: localhost
       hosts:
         c2-php:
