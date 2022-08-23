@@ -1,0 +1,16 @@
+[master]
+master.puppet ansible_host=192.168.50.5
+
+[slave]
+slave1.puppet ansible_host=192.168.50.10
+slave2.puppet ansible_host=192.168.50.20
+minecraft.puppet ansible_host=192.168.50.30
+
+[slave:vars]
+puppet_master=192.168.50.5
+
+[all:vars]
+ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
+ansible_connection=ssh
+ansible_user=vagrant
+ansible_password=vagrant

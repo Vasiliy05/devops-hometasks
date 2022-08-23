@@ -1,0 +1,139 @@
+---
+- name: Install official Puppet repos
+  hosts: all
+  become: true
+  tasks:
+    - name: Install repo
+      yum:
+        name: "https://yum.puppet.com/puppet7-release-el-8.noarch.rpm"
+        state: present
+        disable_gpg_check: yes
+
+- name: Configure Puppet master server
+  hosts: master
+  become: true
+  tasks:
+    - name: Add path to .bashrc
+      lineinfile:
+        path: /root/.bashrc
+        line: 'export PATH="/opt/puppetlabs/bin:/opt/puppetlabs/puppet/bin:$PATH"'
+        state: present
+
+    - name: Stop and disable firewalld on master.
+      service:
+        name: firewalld
+        state: stopped
+        enabled: False
+  
+    - name: Install puppetserver and git
+      yum:
+        pkg:
+        - puppetserver
+        - git
+        - puppet-agent
+        state: present
+        update_cache: yes
+
+    - name: Install r10k 
+      gem:
+        name: r10k
+        state: present
+        executable: /opt/puppetlabs/puppet/bin/gem
+        user_install: no
+
+    - name: Creates directory for r10k config
+      file:
+        path: /etc/puppetlabs/r10k
+        state: directory
+
+    - name: Make script for r10k
+      copy:
+        dest: /etc/puppetlabs/r10k/r10k.yaml
+        content: | 
+          ---
+          :cachedir: '/var/cache/r10k'
+          :sources:
+            :my-org:
+              remote: 'https://github.com/Vasiliy05/puppet-repo-v1-production.git'
+              basedir: '/etc/puppetlabs/code/environments'
+
+    - name: Ensure a job that runs every 5 minets. Creates an entry like "*/5 * * * * r10k deploy environment -p"
+      cron:
+        name: "Run r10k"
+        minute: "*/5"
+        job: "/opt/puppetlabs/puppet/bin/r10k deploy environment -p"
+
+    - name: Reduce puppetserver memory usage
+      replace:
+        path: /etc/sysconfig/puppetserver
+        regexp: "-Xm(s|x)2g"
+        replace: '-Xm\g<1>512m'
+      notify: restart puppet server
+
+    - name: Remove invalid key
+      file:
+        path: /etc/puppetlabs/puppet/ssl/private_keys/master.localdomain.pem
+        state: absent
+
+    - name: Set puppet master autosign
+      ini_file:
+        path: /etc/puppetlabs/puppet/puppet.conf
+        section: master
+        option: "autosign"
+        value: "true"
+
+    - name: Start puppetserver daemon
+      service:
+        name: puppetserver
+        state: started
+        enabled: true
+
+  handlers:
+    - name: restart puppet server
+      service:
+        name: puppetserver
+        state: restarted
+
+- name: Configure Puppet slave hosts
+  hosts: slave
+  become: true
+  tasks:
+    - name: Install puppet agent on slaves
+      yum:
+        pkg: puppet-agent
+        state: present
+        update_cache: yes
+
+    - name: Add master.puppet to /etc/hosts
+      lineinfile: 
+        path: /etc/hosts
+        line: "{{ puppet_master }}	master.puppet"
+        state: present
+
+- name: Setup host
+  hosts: all
+  become: true
+  tasks:
+    - name: Set puppet agent configuration
+      ini_file:
+        path: /etc/puppetlabs/puppet/puppet.conf
+        section: agent
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+      with_items:
+        - { option: "server", value: "master.puppet" }
+        - { option: "runinterval", value: "5m" }
+      notify: restart puppet
+
+    - name: Enable pupper service
+      service:
+        name: puppet
+        state: started
+        enabled: true
+
+  handlers:
+    - name: restart puppet
+      become: true
+      service:
+        name: puppet
+        state: restarted

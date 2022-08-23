@@ -1,0 +1,70 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/centos8s"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = 1024
+    vb.cpus   = 2
+  end
+
+  config.vm.define "slave1.puppet" do |slave1|
+    slave1.vm.hostname = "slave1.puppet"
+    slave1.vm.network "private_network", ip: "192.168.50.10"
+    slave1.vm.provider("virtualbox") { |vb| vb.memory = 1024 }
+  end
+
+  config.vm.define "slave2.puppet" do |slave2|
+    slave2.vm.hostname = "slave2.puppet"
+    slave2.vm.network "private_network", ip: "192.168.50.20"
+    slave2.vm.provider("virtualbox") { |vb| vb.memory = 1024 }
+  end
+
+  config.vm.define "minecraft.puppet" do |minecraft|
+    minecraft.vm.hostname = "minecraft.puppet"
+    minecraft.vm.network "private_network", ip: "192.168.50.30"
+    minecraft.vm.synced_folder ".", "/vagrant"
+  end
+
+  config.vm.define "master.puppet", primary: true do |master|
+    master.vm.hostname = "master.puppet"
+    master.vm.network "private_network", ip: "192.168.50.5"
+    master.vm.synced_folder ".", "/vagrant"
+    master.vm.provision "shell", inline: <<-SHELL
+      yum install ansible -y
+      sed -i "s/#roles_path/roles_path/" /etc/ansible/ansible.cfg
+    SHELL
+
+    master.vm.provision "ansible_local" do |ansible|
+      ansible.playbook = "puppet.yaml"
+      ansible.galaxy_role_file = "requirements.yaml"
+      ansible.galaxy_roles_path = "/etc/ansible/roles"
+      ansible.galaxy_command = "sudo ansible-galaxy collection install -r%{role_file} -p%{roles_path} --force"
+
+      ansible.groups   = {
+        "master" => ["master.puppet"],
+        "slave" => ["slave1.puppet", "slave2.puppet","minecraft.puppet"],
+
+        "slave:vars" => { "puppet_master": "192.168.50.5" },
+        "all:vars" => { "ansible_ssh_extra_args": "-o StrictHostKeyChecking=no",
+                        "ansible_connection": "ssh",
+                        "ansible_user": "vagrant",
+                        "ansible_password": "vagrant"}
+      }
+      ansible.host_vars = {
+        "master.puppet" => { "ansible_host": "192.168.50.5" },
+        "slave1.puppet" => { "ansible_host": "192.168.50.10" },
+        "slave2.puppet" => { "ansible_host": "192.168.50.20" },
+        "minecraft.puppet" => { "ansible_host": "192.168.50.30" },
+      }
+      ansible.limit = "all"
+    end
+  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+    sed -i "s/^PasswordAuthentication no\$/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+    service sshd restart
+  SHELL
+  
+end
