@@ -140,7 +140,7 @@
       [main]
       certname = {{inventory_hostname}}
   
-  - name: start puppetagent
+  - name: start and enabled puppetagent
     become: true
     service:
      name: puppet

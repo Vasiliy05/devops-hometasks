@@ -47,8 +47,7 @@ Vagrant.configure("2") do |config|
       shell
 
     node.vm.provision :ansible_local do |ansible|
-
-      ansible.playbook          = "playbook.yaml"
+      ansible.playbook = "playbook.yaml"
       ansible.inventory_path = "inventory/hosts"  
       ansible.limit = "all"
     end
