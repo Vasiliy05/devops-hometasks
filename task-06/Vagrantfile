@@ -1,0 +1,53 @@
+Vagrant.configure("2") do |config|
+    #ansible collection needs Ansible 2.9 version for this reason we use debian11 (debian 10 - Ansible 2.7.7)
+
+    config.vm.box = "generic/debian11"
+    config.vm.provider "virtualbox" do |vb|
+      vb.memory = 512
+      vb.cpus   = 1
+    end
+
+    config.vm.define "nexus.vm" do |node|
+      node.vm.network "private_network", ip: "192.168.101.10"
+      node.vm.network "forwarded_port", guest: 8081, host: 8081
+      node.vm.provider("virtualbox") { |vb| vb.memory = 3072 }
+    end  
+  
+    config.vm.define "staging.vm" do |node|
+      node.vm.network "private_network", ip: "192.168.101.11"
+      node.vm.network "forwarded_port", guest: 8888, host: 8880
+    end
+
+    config.vm.define "production.vm" do |node|
+      node.vm.network "private_network", ip: "192.168.101.12"
+      node.vm.network "forwarded_port", guest: 8888, host: 8888
+    end
+  
+    config.vm.define "jenkins.vm" do |node|
+      node.vm.network "private_network", ip: "192.168.101.20"
+      node.vm.network "forwarded_port", guest: 8080, host: 8080
+      node.vm.provider("virtualbox") { |vb| vb.memory = 1024 }
+      
+  
+      node.vm.provision :file, source: '.vagrant/machines/production.vm/virtualbox/private_key', destination: '/home/vagrant/.ssh/private_key_production.vm'
+      node.vm.provision :file, source: '.vagrant/machines/nexus.vm/virtualbox/private_key', destination: '/home/vagrant/.ssh/private_key_nexus.vm'
+      node.vm.provision :file, source: '.vagrant/machines/staging.vm/virtualbox/private_key', destination: '/home/vagrant/.ssh/private_key_staging.vm'
+      node.vm.provision :file, source: 'inventory/hosts', destination: 'inventory/hosts'
+  
+      node.vm.provision "shell", inline: <<-shell 
+        chmod =600 /home/vagrant/.ssh/private_key_staging.vm
+        chmod =600 /home/vagrant/.ssh/private_key_nexus.vm
+        chmod =600 /home/vagrant/.ssh/private_key_production.vm
+        shell
+      
+      node.vm.synced_folder ".", "/vagrant"
+  
+      node.vm.provision :ansible_local do |ansible|
+        ansible.playbook = "playbook.yaml"
+        ansible.inventory_path = "inventory/hosts" 
+        ansible.limit = "all"
+        ansible.galaxy_role_file = 'requirements.yaml'
+        ansible.become = true 
+      end
+    end
+  end

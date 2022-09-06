@@ -1,0 +1,84 @@
+- name: required pckgs install
+  apt:
+   pkg:
+    - curl
+    - apt-transport-https
+    - gnupg
+    - git
+    - build-essential
+    - default-jre
+    - python3-pip
+   state: latest
+
+- name: install python-jenkins with pip
+  pip:
+   name:
+   - python-jenkins
+   - lxml
+
+- name: Add Jenkins apt repository key
+  apt_key:
+   url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+   state: present
+
+- name: Add Jenkins apt repository
+  apt_repository:
+   repo: deb https://pkg.jenkins.io/debian-stable binary/
+   update_cache: true
+   
+- name: Install Jenkins
+  apt:
+   pkg:
+   - jenkins
+   state: present
+   
+- name: stop Jenkins
+  service:
+    name: jenkins
+    state: stopped
+    enabled: yes
+
+- name: Copy multiple files to multiple directories
+  copy: src={{ item.0 }} dest={{ item.1 }}
+  with_together:
+    - [ '/vagrant/roles/jenkins/files/users/', 'org.jenkinsci.plugins.golang.GolangBuildWrapper.xml', '/vagrant/roles/jenkins/files/credentials.xml', '/vagrant/roles/jenkins/files/org.jvnet.hudson.plugins.SSHBuildWrapper.xml' ]
+    - [ '/var/lib/jenkins/users/', '/var/lib/jenkins/org.jenkinsci.plugins.golang.GolangBuildWrapper.xml', '/var/lib/jenkins/credentials.xml', '/var/lib/jenkins/org.jvnet.hudson.plugins.SSHBuildWrapper.xml' ]
+
+- name: Setup Wizard disable 
+  lineinfile:
+    path: /etc/default/jenkins
+    line: 'JAVA_ARGS="-Djenkins.install.runSetupWizard=false"'
+    state: present    
+
+ #Plugins install
+
+- name: rm file
+  file: 
+   path: /var/lib/jenkins/secrets/initialAdminPassword
+   state: absent
+
+- name: Change directory permissions
+  file:
+   path: /var/lib/jenkins/users
+   state: directory
+   owner: jenkins
+   group: jenkins
+   mode: '700'
+
+- name: Change file permissions
+  file:
+   path: /var/lib/jenkins/users/users.xml
+   owner: jenkins
+   group: jenkins
+   mode: '0644'
+
+- name: start Jenkins
+  service:
+    name: jenkins
+    state: started
+  
+ #Install plugins
+- include_tasks: plugins.yaml
+
+ #Build the project
+- include_tasks: build.yaml

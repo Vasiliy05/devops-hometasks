@@ -1,0 +1,15 @@
+[jenkins]
+jenkins.vm   ansible_host=192.168.101.20 ansible_connection=local
+
+[nexus]
+nexus.vm ansible_host=192.168.101.10 ansible_ssh_private_key_file=/home/vagrant/.ssh/private_key_nexus.vm
+
+[environment]
+staging.vm ansible_host=192.168.101.11 ansible_ssh_private_key_file=/home/vagrant/.ssh/private_key_staging.vm
+production.vm ansible_host=192.168.101.12 ansible_ssh_private_key_file=/home/vagrant/.ssh/private_key_production.vm
+
+[all:vars]
+ansible_connection=ssh
+ansible_user=vagrant
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
