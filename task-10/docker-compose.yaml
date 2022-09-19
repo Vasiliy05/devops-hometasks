@@ -1,6 +1,16 @@
 version: '3'
 
 services:
+  nexus:
+    build:
+      context: .
+      dockerfile: Dockerfile.Nexus
+    image: nexus
+    container_name: nexus
+    ports:
+    - 81:8081
+    networks:
+    - net
 
   jenkins:
     build:
