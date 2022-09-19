@@ -1,7 +1,8 @@
 FROM golang:1.16
 RUN mkdir /word-cloud-generator && \
     cd /word-cloud-generator && \
-    git clone https://github.com/Vasiliy05/word-cloud-generator.git && \
+    git clone https://github.com/Fenikks/word-cloud-generator.git && \
+    cd word-cloud-generator && \
     make
 
 FROM alpine:latest
