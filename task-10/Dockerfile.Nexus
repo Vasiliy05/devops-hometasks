@@ -1,0 +1,8 @@
+FROM debian:latest
+COPY ./nexus.yaml /tmp/nexus/nexus.yaml
+COPY ./nexus/nexus_pre_tasks.yml /tmp/nexus/nexus_pre_tasks.yml
+COPY ./nexus/nexus3-oss /usr/share/ansible/roles/nexus3-oss
+RUN apt update -y && \
+    apt install -y ansible && \
+    apt clean && ansible-playbook /tmp/nexus/nexus.yaml
+CMD /opt/nexus-latest/bin/nexus run
