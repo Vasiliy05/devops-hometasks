@@ -1,0 +1,38 @@
+---
+branches:
+  only:
+    - master
+
+sudo: required
+
+language: python
+
+python: 3.8
+
+cache:
+  pip: true
+  directories:
+    - molecule/.nexus-downloads/
+
+services:
+  - docker
+
+install:
+  - pip install --upgrade --upgrade-strategy eager -r requirements.txt
+
+env:
+  - SCENARIO=default
+  - SCENARIO=default-centos8
+  - SCENARIO=default-debian_buster
+  - SCENARIO=default-ubuntu_18.04
+
+script: |
+  if [ "${SCENARIO}" == "default" ]; then
+    ./tests/test_groovySyntax.sh
+    molecule test
+  else
+    molecule test -s "${SCENARIO}"
+  fi
+
+notifications:
+  webhooks: https://galaxy.ansible.com/api/v1/notifications/

@@ -1,0 +1,24 @@
+---
+- name: Install software dependenses
+  apt:
+    pkg: 
+    - gnupg2 
+    - software-properties-common
+    - rsync
+    state: present
+    update_cache: yes
+
+- name: Add key
+  apt_key:
+    url: https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
+  
+- name: Add repository
+  apt_repository:
+    repo: deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/ buster main
+    state: present
+    update_cache: true
+
+- name: Install Java
+  apt:
+    name: adoptopenjdk-8-hotspot
+    state: present

@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Hudson-Version: 2.289.3
+Implementation-Title: locale
+Long-Name: Locale plugin
+Implementation-Version: 144.v1a_998824ddb_3
+Group-Id: io.jenkins.plugins
+Minimum-Java-Version: 1.8
+Plugin-License-Name: MIT License
+Specification-Title: The Jenkins Plugins Parent POM Project
+Plugin-ScmUrl: https://github.com/jenkinsci/locale-plugin
+Plugin-Version: 144.v1a_998824ddb_3
+Jenkins-Version: 2.289.3
+Url: https://github.com/jenkinsci/locale-plugin
+Short-Name: locale
+Plugin-License-Url: http://opensource.org/licenses/MIT
+Plugin-Developers: Kohsuke Kawaguchi:kohsuke:,Oleg Nenashev:oleg_nenas
+ hev:,Valentin Delaye:jonesbusy:
+Extension-Name: locale
+Build-Jdk-Spec: 1.8
+Created-By: Maven Archiver 3.5.1
+

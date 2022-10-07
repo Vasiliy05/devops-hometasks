@@ -1,0 +1,131 @@
+- name: Install Jenkins
+  vars:
+    jenkins_user: admin
+    jenkins_passw: admin
+    jenkins_url: http://localhost:8080
+  hosts: localhost
+  become: true
+  tasks:
+    - name: Install packeges all other
+      apt:
+        pkg:
+        - daemon
+        - git
+        - build-essential 
+        - python-pip-whl
+        - python3-pip
+        - openjdk-11-jdk
+        - gnupg2
+        state: present
+        update_cache: yes
+
+    - name: Install Python
+      pip:
+        name:
+          - python-jenkins
+          - lxml
+
+    - name: Install key for repo
+      apt_key:
+        url: https://pkg.jenkins.io/debian/jenkins.io.key
+        state: present
+    
+    - name: Add repo to repofile
+      apt_repository:
+        repo: deb https://pkg.jenkins.io/debian-stable binary/
+        state: present
+        update_cache: yes
+
+    - name: Install Jenkins
+      apt:
+        pkg:
+        - jenkins
+        state: present
+      ignore_errors: yes
+ 
+    - name: Stop Jenkins service
+      service:
+        name: jenkins
+        state: stopped
+
+    - name: Make dirs
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: jenkins
+        group: jenkins
+      with_items:
+        - /var/lib/jenkins/users/admin_8133878285141068281
+        - /var/lib/jenkins/jobs/gobuild
+ 
+    - name: Copy config files
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dst }}"
+        owner: jenkins
+        group: jenkins
+        force: yes
+      with_items:
+        - { src: "/tmp/jenkins/files/users/users.xml", dst: "/var/lib/jenkins/users/" }
+        - { src: "/tmp/jenkins/files/users/admin_8133878285141068281/config.xml", dst: "/var/lib/jenkins/users/admin_8133878285141068281/" }
+        - { src: "/tmp/jenkins/files/config.xml", dst: "/var/lib/jenkins/" }
+        - { src: "/tmp/jenkins/files/locale.xml", dst: "/var/lib/jenkins/" }
+        - { src: "/tmp/jenkins/files/credentials.xml", dst: "/var/lib/jenkins/" }
+        - { src: "/tmp/jenkins/files/org.jenkinsci.plugins.golang.GolangBuildWrapper.xml", dst: "/var/lib/jenkins/" }
+        - { src: "/tmp/jenkins/files/jobs/gobuild/config.xml", dst: "/var/lib/jenkins/jobs/gobuild/" }
+  
+    - name: Disable start wizard
+      lineinfile:
+         path: "{{ item.path }}"
+         state: present
+         regexp: "{{ item.exp }}"
+         line: "{{ item.n_ln }}"
+      with_items:
+        - { path: "/etc/default/jenkins", exp: '^JAVA_ARGS="-Djava.awt.headless=true"', n_ln: 'JAVA_ARGS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false -Dhudson.security.csrf.DefaultCrumbIssuer.EXCLUDE_SESSION_ID=true"' }
+
+    - name: Start Jenkins service
+      service:
+        name: jenkins
+        state: started
+
+    - name: Sleep for 180 seconds and continue with play
+      wait_for:
+        timeout: 180
+      delegate_to: localhost
+
+    - name: Install plugin
+      jenkins_plugin:
+        name: "{{ item }}"
+        url_username: "{{ jenkins_user }}"
+        url_password: "{{ jenkins_passw }}"
+        url: "{{ jenkins_url }}"
+        with_dependencies: yes
+      with_items:
+        - locale
+        - git
+        - github
+        - golang
+        - nexus-artifact-uploader
+        - timestamper 
+        - pipeline
+        - pipeline-stage-view
+        - pipeline-github-lib
+        - pipeline-build-step
+        - workflow-basic-steps
+        - build-pipeline-plugin
+        - workflow-aggregator
+        - github-branch-source
+        - workflow-cps
+        - ssh
+        - ssh-build-agents
+        - workflow-aggregator
+        - workflow-durable-task-step
+        - pipeline-utility-steps
+        - ssh-steps
+        - pipeline-stage-step
+        - docker-workflow
+        - docker-plugin
+      register: plugin_result
+      until: plugin_result is success
+      retries: 5   # repeat 5-th times
+      delay: 5     # delay 5 sec betwin retries
