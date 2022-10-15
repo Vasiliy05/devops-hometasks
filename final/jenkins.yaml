@@ -43,11 +43,6 @@
         state: present
       ignore_errors: yes
  
-    - name: Stop Jenkins service
-      service:
-        name: jenkins
-        state: stopped
-
     - name: Make dirs
       file:
         path: "{{ item }}"
@@ -56,7 +51,7 @@
         group: jenkins
       with_items:
         - /var/lib/jenkins/users/admin_8133878285141068281
-        - /var/lib/jenkins/jobs/gobuild
+        - /var/lib/jenkins/jobs/GoPipeline
  
     - name: Copy config files
       copy:
@@ -72,7 +67,7 @@
         - { src: "/tmp/jenkins/files/locale.xml", dst: "/var/lib/jenkins/" }
         - { src: "/tmp/jenkins/files/credentials.xml", dst: "/var/lib/jenkins/" }
         - { src: "/tmp/jenkins/files/org.jenkinsci.plugins.golang.GolangBuildWrapper.xml", dst: "/var/lib/jenkins/" }
-        - { src: "/tmp/jenkins/files/jobs/gobuild/config.xml", dst: "/var/lib/jenkins/jobs/gobuild/" }
+        - { src: "/tmp/jenkins/files/jobs/GoPipeline/config.xml", dst: "/var/lib/jenkins/jobs/GoPipeline/" }
   
     - name: Disable start wizard
       lineinfile:
@@ -87,6 +82,7 @@
       service:
         name: jenkins
         state: started
+        enabled: yes
 
     - name: Sleep for 180 seconds and continue with play
       wait_for:
@@ -102,7 +98,6 @@
         with_dependencies: yes
       with_items:
         - locale
-        - git
         - github
         - golang
         - nexus-artifact-uploader
