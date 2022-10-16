@@ -78,8 +78,8 @@
       with_items:
         - { path: "/etc/default/jenkins", exp: '^JAVA_ARGS="-Djava.awt.headless=true"', n_ln: 'JAVA_ARGS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false -Dhudson.security.csrf.DefaultCrumbIssuer.EXCLUDE_SESSION_ID=true"' }
 
-    - name: Start Jenkins service
-      service:
+    - name: Start jenkins
+      sysvinit: 
         name: jenkins
         state: started
         enabled: yes
